@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ip Camera</title>
+    <style>
+        .container{
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+        }
+        .cameras{
+           width: 70%;
+           display: flex;
+           align-items: flex-start;
+           justify-content: space-between;
+           flex-wrap: wrap;
+        }
+        img{ 
+            width: 48%;
+            border-radius: 20px;
+            box-shadow: 1px 1px 10px black;
+            margin: 5px 0;
+        }
+        .ip_input{
+            width: 25%;
+            padding: 10px 5px;
+            border-radius: 10px;
+            box-shadow: 1px 1px 10px black;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        input{
+            width: 90%;
+            padding: 10px 5px;
+            margin: 5px 0;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container" id="CContainer">
+        <div class="cameras" id="cameras">
+            <img src="{{ url_for('video_feed') }}">
+        </div>
+        <div class="ip_input">
+            <input type="text" placeholder="Write IP Camera Address" id="address">
+            <input type="submit" value="Add" id="add_ip">
+            <!-- <input type="submit" value="Train Images" id="train"> -->
+        </div>
+    </div>
+    <script>
+        // document.getElementById("train").addEventListener("click", function() {
+        //     fetch('/train')
+        //         .then(response => alert('Successfully Trained'))
+        //         .catch(error => {
+        //             alert('Unsuccessfully Trained')
+        //         });
+        // });
+
+        document.getElementById("add_ip").addEventListener('click', async (event) => {
+            event.preventDefault();
+            const add = document.getElementById('address').value
+            try {
+                const response = await fetch('/camera-ip', {
+                    method: 'POST',
+                    body: JSON.stringify({ ip: add }) 
+                });
+                if (response.status === 201) {
+                    // Reload the current page
+                    // window.location.reload();
+                    ip = (((add.split("@")[1]).replaceAll(':','')).replaceAll('.','')).split('/')[0]
+                    console.log(ip);
+                    const element = document.getElementById('cameras');
+                    const img = document.createElement("img");
+                    const videoFeedUrl = new URL(`/video_feed_${ip}`, window.location.origin);
+                    img.src = videoFeedUrl.toString();
+                    element.appendChild(img);
+                } else {
+                    console.error('Unexpected response status:', response.status);
+                    // Handle other response statuses as needed
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        });
+
+    </script>
+</body>
+</html>
